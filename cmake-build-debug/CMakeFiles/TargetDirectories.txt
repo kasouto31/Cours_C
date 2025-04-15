@@ -1,0 +1,3 @@
+C:/Users/enzop/OneDrive/Bureau/C_revisions/tb-ptab/cmake-build-debug/CMakeFiles/tb_ptab.dir
+C:/Users/enzop/OneDrive/Bureau/C_revisions/tb-ptab/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/enzop/OneDrive/Bureau/C_revisions/tb-ptab/cmake-build-debug/CMakeFiles/rebuild_cache.dir
