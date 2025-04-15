@@ -3,80 +3,111 @@
 #include <conio.h>
 
 typedef struct {
-    char nom[10];
-    char id[10];
+    char date[10+1];
+    int nbAMb, nbInc, nbDes, nbIterv;
 
-}interv;
+}intervention;
 
 typedef struct {
-    char id[10];
-    interv **ppinterv;
+    char id[16+1];
+    char loc[26+1];
+    int nbAff, anciv, nbInterv;
+    intervention **ppInterv;
 
-}casrn;
-
+}caserne;
 
 int main(void) {
-    casrn inter_casrn;
-    int enco = 0;
-    int i = 0;
+    int nbEncoCaserne = 0;
+    int nbEncoIntervention = 0;
+
     char encore;
 
-    interv **ppintervS = NULL;
+    intervention **ppIntervS = NULL; // PPointeur de sécu
+    caserne *pcaserne;    // Alias structure caserne
 
-    inter_casrn.ppinterv = NULL;
+    nbEncoCaserne++;    // je prépare déjà pour la suite
 
+    // malloc
+    pcaserne = (caserne *) malloc(nbEncoCaserne * sizeof(caserne));
+    if (!pcaserne) {
+        return -1;
+    }
+
+    pcaserne->ppInterv = NULL;
+
+    // Accès des interventions et gestion mémoire
     do {
-        enco++;
 
-        // Lors de la création du tableau de pointeurs
-        //ppintervS = inter_casrn.ppinterv; // Non nécessaire
+        // Partie des interventions
+        nbEncoIntervention++;
 
-        inter_casrn.ppinterv = (interv **) realloc(inter_casrn.ppinterv, enco * sizeof(interv*));   // taille d'un pointeur vers interv
-        if (!inter_casrn.ppinterv) {
-            inter_casrn.ppinterv = ppintervS;   // Retour arrière en cas d'erreur
-            enco--;
+        // realloc
+        pcaserne->ppInterv = (intervention **) realloc(pcaserne->ppInterv, nbEncoIntervention * sizeof(intervention *));
+        if (!pcaserne->ppInterv) {
+            nbEncoIntervention--;
+            pcaserne->ppInterv = ppIntervS;
+
+            printf("Out of memory\n");
             break;
         }
 
+        // actualis ation ppointeur de sécu
+        ppIntervS = pcaserne->ppInterv;
 
-        ppintervS = inter_casrn.ppinterv;
-        // On arrive dans le tableau de pointeurs
-        inter_casrn.ppinterv[enco - 1] = (interv *) malloc(sizeof(interv));
-        if (!inter_casrn.ppinterv[enco - 1]) {
-            //inter_casrn.ppinterv[enco - 1] = pintervS;
-            enco--;
+        // malloc
+        pcaserne->ppInterv[nbEncoIntervention - 1] = (intervention *) malloc(sizeof(intervention));
+        if (!pcaserne->ppInterv[nbEncoIntervention - 1]) {
+            nbEncoIntervention--;
             break;
         }
 
+        printf("\n===[Intervention %d]===\n ", nbEncoIntervention);
 
-        printf("\nIntervention %d:\n ", enco);
-        printf("\n Entrez un nom : ");
-        scanf("%s", &inter_casrn.ppinterv[enco - 1]->nom); getchar();
+        printf("\n Entrez une date : ");
+        scanf("%s", &pcaserne->ppInterv[nbEncoIntervention - 1]->date); getchar();
 
-        printf("\n Entrez un id : ");
-        scanf("%s", &inter_casrn.ppinterv[enco - 1]->id); getchar();
+        printf("\n Entrer un nombre d'Amb : ");
+        scanf("%d", &pcaserne->ppInterv[nbEncoIntervention - 1]->nbAMb); getchar();
 
+        printf("\n Entrez un nombre d'Inc : ");
+        scanf("%d", &pcaserne->ppInterv[nbEncoIntervention - 1]->nbInc); getchar();
 
-        printf("\nEncore ?");
+        printf("\n Entrez un nombre de Des : ");
+        scanf("%d", &pcaserne->ppInterv[nbEncoIntervention - 1]->nbDes); getchar();
+
+        printf("\nEncore ?\n");
         encore = getch();
 
-    }while(encore == 'o' || encore == 'O');
+    }while (encore == 'o' || encore == 'O');
 
-    printf("\n\n\t =====[Sommaire]===== :");
-
-    for(i = 0; i < enco; i++) {
-        printf("\n\t %s", inter_casrn.ppinterv[i]->nom);
-        printf("\n\t %s\n", inter_casrn.ppinterv[i]->id);
+    for (int i = 0; i < nbEncoCaserne; i++) {
+        printf("\n\n\t===[Caserne %d]===", nbEncoCaserne);
     }
 
-    // Libération de la mémoire :
-    for (i = 0; i < enco; i++) {
-        free(inter_casrn.ppinterv[i]);
-        inter_casrn.ppinterv[i] = NULL;
-    }
-    free(inter_casrn.ppinterv);
-    inter_casrn.ppinterv = NULL;
 
-    getch();
+    // partie affichage Intervention
+    for (int x = 0; x < nbEncoIntervention; x++) {
+        printf("\n\n\t===[Interventions %d]===", nbEncoIntervention);
+
+        printf("\n Date : %s",pcaserne->ppInterv[x]->date);
+        printf("\n Amb : %d",pcaserne->ppInterv[x]->nbAMb);
+        printf("\n Inc : %d",pcaserne->ppInterv[x]->nbInc);
+        printf("\n Des : %d",pcaserne->ppInterv[x]->nbDes);
+    }
+
+    getch();    // Attente frappe utilisateur avant fermeture
+
+    // Libération mémoire
+    for (int x = 0; x < nbEncoIntervention; x++) {
+        free(pcaserne->ppInterv[x]);
+        pcaserne->ppInterv[x] = NULL;
+    }
+
+    free(pcaserne->ppInterv);
+    pcaserne->ppInterv = NULL;
+
+    free(pcaserne);
+    pcaserne = NULL;
+
     return 0;
 }
