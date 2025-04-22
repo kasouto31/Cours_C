@@ -1,6 +1,9 @@
 #include <conio.h>
 #include <stdlib.h>
 
+// Suite de 6_PStructure.c ou dans cet exo nous devons utiliser des fonctions
+// On m'a fait remarqué que je n'avais pas mis '*' la ou il le fallait ce qui a causé ma perte :(
+
 typedef struct {
     char date[11];
     int nbAmb, nbInc, nbDes, nbInterv;
