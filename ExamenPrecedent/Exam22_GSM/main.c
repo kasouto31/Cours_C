@@ -44,6 +44,11 @@ int main() {
     prodgsm *pfab = NULL;
 
     pfab = (prodgsm *) malloc(sizeof(prodgsm));
+    if (pfab == NULL) {
+        printf("\nErreur - memoire saturee .\n");
+        getch();
+        return 1;
+    }
 
     pfab->nbgsm = 0;
     pfab->nbrep = 0;
@@ -104,9 +109,11 @@ int main() {
 
     }while (encoreREP == 'O' || encoreREP == 'o');
 
-    pfab->prixT = (int *)malloc(sizeof(int));
-    pfab->prixM = (float *)malloc(sizeof(float));
-    *(pfab->prixT) = 0;  // très important !
+
+    pfab->prixT = (int *) malloc(sizeof(int));
+    pfab->prixM = (float *) malloc(sizeof(float));
+    *(pfab->prixT) = 0;  // initialiser à 0 pour éviter les bugs lors des stats
+
 
     stat(pfab);
 
@@ -115,25 +122,26 @@ int main() {
 
     libere(&pfab);
 
-    free(pfab);
-    pfab = NULL;
-
     getch();
     return 0;
 }
 
-
+// Sécurisation du realloc + décrémentation en cas d'erreurs
 int introG(gsm **ppTgsm, int *pnbgsm ) {
+    gsm *ppTgsmS = NULL;
+    ppTgsmS = *ppTgsm;
     (*pnbgsm)++;
 
     *ppTgsm = (gsm *) realloc(*ppTgsm, *pnbgsm * sizeof(gsm));
     if (*ppTgsm == NULL) {
+        *ppTgsm = ppTgsmS;
+        (*pnbgsm)--;
         return 1;
     }
     return 0;
 }
 
-
+// Décrémentation en cas d'erreur ajoutée
 int introR(rep ***pppTrep, int *pnbrep) {
     rep **ppTrepS = NULL;
     ppTrepS = *pppTrep; // Sauvegarde pointeur
@@ -143,6 +151,7 @@ int introR(rep ***pppTrep, int *pnbrep) {
     *pppTrep = (rep **) realloc(*pppTrep, *pnbrep * sizeof(rep *));
     if (!*pppTrep) {
         *pppTrep = ppTrepS;
+        (*pnbrep)--;
         return 1;
     }
 
@@ -157,10 +166,17 @@ void stat(prodgsm *pfab) {
     for (int x = 0; x < pfab->nbrep; x++) {
         *pfab->prixT += pfab->ppTrep[x]->prix;
     }
-    *(pfab->prixM) = (float)(*(pfab->prixT)); // pfab->nbgsm;
-    *(pfab->prixM) =(*(pfab->prixM) / (float)(pfab->nbrep));
-    printf("Nombre de gsm : %d", pfab->nbgsm);
-    printf("Nombre de reparation : %d", pfab->nbrep);
+    // Fonctionne correctement (pour le moment)
+    *(pfab->prixM) = (float) (*pfab->prixT); // pfab->nbgsm;
+    *(pfab->prixM) = *(pfab->prixM) / (float) (pfab->nbrep);
+
+
+    // Zone de test :
+
+    // Ne change pas la valeur donne comme résultat 0.00
+        //pfab->prixM[0] = (float) (*pfab->prixM) / (float) (pfab->nbrep);
+
+    // *(pfab->prixM) = *pfab->prixM / pfab->nbrep;
 
 }
 
@@ -170,7 +186,7 @@ void recap(prodgsm *pfab) {
     printf("\n* Identifint du producteur : %s ", pfab->idprod);
     printf("\n* Localisation du producteur : %s ", pfab->loc);
     printf("\n* Montant total des reparations : %d ", *(pfab->prixT));
-    printf("\n* Montant moyen d'une reparation  : %.2f ", *(pfab->prixM));
+    printf("\n* Montant moyen d'une reparation  : %.2f ",(float) *(pfab->prixM));
 
     printf("\t\t\n\n Recapitulatif des GSM produits\n");
     for (int i = 0; i < pfab->nbgsm; i++) {
@@ -192,14 +208,15 @@ void recap(prodgsm *pfab) {
 void libere(prodgsm **ppfab) {
      for (int i = 0; i < (*ppfab)->nbrep; i++) {
          free((*ppfab)->ppTrep[i]);
-         // (*ppfab)->ppTrep[i] = NULL;
+         (*ppfab)->ppTrep[i] = NULL;
      }
     free((*ppfab)->ppTrep);
-    // (*ppfab)->ppTrep = NULL;
+    (*ppfab)->ppTrep = NULL;
 
     free((*ppfab)->pTgsm);
-    // (*ppfab)->pTgsm = NULL;
+    (*ppfab)->pTgsm = NULL;
 
-    // *ppfab = NULL;
+    free(*ppfab);
+    *ppfab = NULL;
 
 }
